@@ -20,6 +20,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/docker/cli/templates"
+	"text/template"
 	"time"
 
 	"github.com/containerd/nerdctl/pkg/idutil/imagewalker"
@@ -41,6 +43,11 @@ var imageInspectCommand = &cli.Command{
 			Name:  "mode",
 			Usage: "Inspect mode, \"dockercompat\" for Docker-compatible output, \"native\" for containerd-native output",
 			Value: "dockercompat",
+		},
+		&cli.StringFlag{
+			Name: "format",
+			// Alias "-f" is reserved for "--filter"
+			Usage: "Format the output using the given Go template, e.g, '{{json .}}'",
 		},
 	},
 }
@@ -95,11 +102,32 @@ func ImageInspectAction(clicontext *cli.Context) error {
 		}
 	}
 
-	b, err := json.MarshalIndent(f.entries, "", "    ")
-	if err != nil {
-		return err
+	var tmpl *template.Template
+	switch format := clicontext.String("format"); format{
+	case "","table":
+		b, err := json.MarshalIndent(f.entries, "", "    ")
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(clicontext.App.Writer, string(b))
+	case "raw":
+		return errors.New("unsupported format: \"raw\"")
+	default:
+		var err error
+		tmpl, err = templates.Parse(format)
+		if err != nil {
+			return err
+		}
+		if tmpl !=nil{
+			for _, value := range f.entries{
+				b,err := json.Marshal(value)
+				if err!=nil{
+					return err
+				}
+				fmt.Fprintf(clicontext.App.Writer,string(b)+"\n");
+			}
+		}
 	}
-	fmt.Fprintln(clicontext.App.Writer, string(b))
 
 	if len(errs) > 0 {
 		return errors.Errorf("%d errors: %v", len(errs), errs)
