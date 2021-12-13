@@ -86,7 +86,7 @@ func renameAction(cmd *cobra.Command, opts *renameOptions) error {
 	if err != nil {
 		return err
 	} else if n == 0 {
-		return fmt.Errorf("no such container %s", req)
+		return fmt.Errorf("no such container %s ", req)
 	}
 	return nil
 }
