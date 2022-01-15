@@ -98,7 +98,7 @@ func TestRunCgroupV1(t *testing.T) {
 	pids_limit := "/sys/fs/cgroup/pids/pids.max"
 	cpu_share := "/sys/fs/cgroup/cpu/cpu.shares"
 	cpuset_cpus := "/sys/fs/cgroup/cpuset/cpuset.cpus"
-	out_cpus, _ := base.Cmd("run", "--rm", "--cpus", "0.5", "--cpuset-mems", "0", "--memory", "42m", "--pids-limit", "42", "--cpu-shares", "2000", "--cpuset-cpus", "0-1", testutil.AlpineImage, "cat", quota, period, cpuset_mems, memory_limit, pids_limit, cpu_share, cpuset_cpus)
+	out_cpus:= base.Cmd("run", "--rm", "--cpus", "0.5", "--cpuset-mems", "0", "--memory", "42m", "--pids-limit", "42", "--cpu-shares", "2000", "--cpuset-cpus", "0-1", testutil.AlpineImage, "cat", quota, period, cpuset_mems, memory_limit, pids_limit, cpu_share, cpuset_cpus)
 	assert.Equal(t, strings.TrimSpace(out_cpus), "50000\n100000\n0\n44040192\n42\n2000\n0-1\n")
 }
 
